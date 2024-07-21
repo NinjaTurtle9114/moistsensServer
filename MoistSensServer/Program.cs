@@ -1,4 +1,6 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
+using MoistSensServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,19 +40,21 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
-app.MapPost("/humidity-data", (HumidityData data) =>
+app.MapPost("/humidity-post", (HumidityData data) =>
+    $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is {data.Humidity.ToString(CultureInfo.InvariantCulture)}");
+
+
+app.MapGet("/humidity-get", (string? name, int humidity) =>
 {
-    Console.WriteLine($"at time {data.Date.ToString(CultureInfo.InvariantCulture)} humidity was {data.Humidity.ToString(CultureInfo.InvariantCulture)}");
+    var reading = new HumidityData(name ?? throw new ArgumentNullException(nameof(name)), humidity);
+    return reading;
 });
+
+
 app.Run();
+
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-
-public class HumidityData
-{
-    public DateTime Date { get; set; }
-    public double Humidity { get; set; }
 }
