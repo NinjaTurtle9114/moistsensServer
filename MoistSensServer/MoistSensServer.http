@@ -1,0 +1,13 @@
+@moistSensServer_HostAddress = https://localhost:44359
+
+GET {{moistSensServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+POST {{moistSensServer_HostAddress}}/humidity-data/
+Content-Type: application/json
+
+{
+  "date": "2024-07-21T02:31:17.106Z",
+  "humidity": 51
+}
