@@ -1,8 +1,13 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using MoistSensServer;
+using Microsoft.Data.Sqlite;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+var sql = "INSERT INTO humidity_table (Date, Humidity, SensorName)" +
+          "VALUES (@Date, @Humidity, @SensorName)";
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -41,7 +46,29 @@ app.MapGet("/weatherforecast", () =>
     .WithOpenApi();
 
 app.MapPost("/humidity-post", (HumidityData data) =>
-    $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is {data.Humidity.ToString(CultureInfo.InvariantCulture)}");
+{
+    try
+    {
+        using var connection = new SqliteConnection(@"Data Source=C:\Users\simon\RiderProjects\MoistSensServer\identifier.sqlite");
+        connection.Open();
+        Console.WriteLine("Connected to SQLite");
+
+        using var command = new SqliteCommand(sql, connection);
+
+        command.Parameters.AddWithValue("@Date", DateTime.Now);
+        command.Parameters.AddWithValue("@Humidity", data.Humidity);
+        command.Parameters.AddWithValue("@SensorName", data.SensorName);
+
+        var rowInserted = command.ExecuteNonQuery();
+        Console.WriteLine($"{data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity: {data.Humidity.ToString(CultureInfo.InvariantCulture)} successfully added");
+    }
+    catch (SqliteException e)
+    {
+        Console.WriteLine(e.Message);
+    }
+    return $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is {data.Humidity.ToString(CultureInfo.InvariantCulture)}";
+});
+    
 
 
 app.MapGet("/humidity-get", (string? name, int humidity) =>
