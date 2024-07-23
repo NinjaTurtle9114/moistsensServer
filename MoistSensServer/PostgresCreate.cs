@@ -9,7 +9,7 @@ public class PostgresCreate
     private static string User = "postgres";
     private static string Database = "PostgreDB";
     private static string Port = "5432";
-    private static string Password = "si_so*LtYoFR2dDFy@-s";
+    private static string Password;
 
     static void Main(string[] args)
     {
