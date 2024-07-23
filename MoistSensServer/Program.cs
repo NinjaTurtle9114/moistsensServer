@@ -1,5 +1,4 @@
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc;
 using MoistSensServer;
 using Microsoft.Data.Sqlite;
 
@@ -25,26 +24,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
-
 app.MapPost("/humidity-post", (HumidityData data) =>
 {
     try
@@ -58,16 +37,20 @@ app.MapPost("/humidity-post", (HumidityData data) =>
         command.Parameters.AddWithValue("@Date", DateTime.Now);
         command.Parameters.AddWithValue("@Humidity", data.Humidity);
         command.Parameters.AddWithValue("@SensorName", data.SensorName);
-
-        var rowInserted = command.ExecuteNonQuery();
+        command.ExecuteNonQuery();
+        
         Console.WriteLine($"{data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity: {data.Humidity.ToString(CultureInfo.InvariantCulture)} successfully added");
     }
     catch (SqliteException e)
     {
         Console.WriteLine(e.Message);
     }
-    return $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is {data.Humidity.ToString(CultureInfo.InvariantCulture)}";
-});
+
+    return
+        $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is {data.Humidity.ToString(CultureInfo.InvariantCulture)}";
+})
+.WithName("HumidityPost")
+.WithOpenApi();
     
 
 
@@ -75,13 +58,10 @@ app.MapGet("/humidity-get", (string? name, int humidity) =>
 {
     var reading = new HumidityData(name ?? throw new ArgumentNullException(nameof(name)), humidity);
     return reading;
-});
+})
+.WithName("HumidityGet")
+.WithOpenApi();
 
 
 app.Run();
 
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
