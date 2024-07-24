@@ -2,7 +2,6 @@ using System.Globalization;
 using MoistSensServer;
 using Microsoft.Data.Sqlite;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 var sql = "INSERT INTO humidity_table (Date, Humidity, SensorName)" +
@@ -64,4 +63,3 @@ app.MapGet("/humidity-get", (string? name, int humidity) =>
 
 
 app.Run();
-
