@@ -7,7 +7,8 @@ namespace MoistSensServer;
 
 
 public class PostgresCreate
-{ 
+{
+    private readonly string _connectionString;
     public PostgresCreate()
     {
         
@@ -30,18 +31,37 @@ public class PostgresCreate
                            "Missing password string. Set the POSTGRES_SERVER_PASSWORD environment variable");
         
         
-        var connectionString =
+        _connectionString =
             $"Host={host};Username={user};Database={dbName};Port={port};Password={password}";
 
-        using var npgsqlConnection = new NpgsqlConnection(connectionString);
+        using var npgsqlConnection = new NpgsqlConnection(_connectionString);
         
         npgsqlConnection.Open();
     }
 
-    public void WriteHumidity()
+    public async void InsertHumidityData(HumidityData data)
     {
         var sql ="INSERT INTO humidity_table (date, humidity, sensorname)" +
                  "VALUES(@date, @humidity, @sensorname)";
+
+        try
+        {
+            using var dataSource = NpgsqlDataSource.Create(_connectionString);
+
+            await using var command = dataSource.CreateCommand(sql);
+
+            command.Parameters.AddWithValue("@data", DateTime.Now);
+            command.Parameters.AddWithValue("@humidity",data.Humidity);
+            command.Parameters.AddWithValue("@sensorname", data.SensorName ?? throw new InvalidOperationException(
+                "Missing sensorName. HumidityData sensorName variable cannot be null"));
+            await command.ExecuteNonQueryAsync();
+            
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error: {e.Message}");
+            throw;
+        }
     }
     
 }

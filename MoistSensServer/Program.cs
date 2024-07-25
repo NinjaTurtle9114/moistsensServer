@@ -25,7 +25,7 @@ app.UseHttpsRedirection();
 
 app.MapPost("/humidity-post", (HumidityData data) =>
 {
-    try
+    /*try
     {
         using var connection = new SqliteConnection(@"Data Source=C:\Users\simon\RiderProjects\MoistSensServer\identifier.sqlite");
         connection.Open();
@@ -43,7 +43,10 @@ app.MapPost("/humidity-post", (HumidityData data) =>
     catch (SqliteException e)
     {
         Console.WriteLine(e.Message);
-    }
+    }*/
+
+    var postgresCreate = new PostgresCreate();
+    postgresCreate.InsertHumidityData(data);
 
     return
         $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is {data.Humidity.ToString(CultureInfo.InvariantCulture)}";
