@@ -4,9 +4,6 @@ using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var sql = "INSERT INTO humidity_table (Date, Humidity, SensorName)" +
-          "VALUES (@Date, @Humidity, @SensorName)";
-
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

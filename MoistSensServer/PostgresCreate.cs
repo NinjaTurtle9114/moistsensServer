@@ -41,8 +41,8 @@ public class PostgresCreate
 
     public async void InsertHumidityData(HumidityData data)
     {
-        var sql ="INSERT INTO humidity_table (date, humidity, sensorname)" +
-                 "VALUES(@date, @humidity, @sensorname)";
+        const string sql = "INSERT INTO humidity_table (date, humidity, sensorname)" +
+                           "VALUES(@date, @humidity, @sensorname)";
 
         try
         {
