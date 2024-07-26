@@ -23,20 +23,27 @@ public class PostgresCreate
 
         const string dbName = "postgres";
         
-        const string port = "5432";
+        const int port = 5432;
 
         var passwordString = Environment.GetEnvironmentVariable("POSTGRES_SERVER_PASSWORD");
         var password = passwordString ??
                        throw new MissingConfigurationFieldException(
                            "Missing password string. Set the POSTGRES_SERVER_PASSWORD environment variable");
         
-        
         _connectionString =
-            $"Host={host};Username={user};Database={dbName};Port={port};Password={password}";
-
-        using var npgsqlConnection = new NpgsqlConnection(_connectionString);
+            $"Host={host};Port={port};Database={dbName};Username={user};Password={password}";
         
-        npgsqlConnection.Open();
+        try
+        {
+            using var npgsqlConnection = new NpgsqlConnection(_connectionString);
+            npgsqlConnection.Open();
+        }
+        catch (NpgsqlException e)
+        {
+            
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public async void InsertHumidityData(HumidityData data)
@@ -50,7 +57,7 @@ public class PostgresCreate
 
             await using var command = dataSource.CreateCommand(sql);
 
-            command.Parameters.AddWithValue("@data", DateTime.Now);
+            command.Parameters.AddWithValue("@date", DateTime.Now);
             command.Parameters.AddWithValue("@humidity",data.Humidity);
             command.Parameters.AddWithValue("@sensorname", data.SensorName ?? throw new InvalidOperationException(
                 "Missing sensorName. HumidityData sensorName variable cannot be null"));
