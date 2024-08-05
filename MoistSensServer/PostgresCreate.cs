@@ -1,10 +1,6 @@
-﻿using System;
-using System.IO;
-using MoistSensServer.Exceptions;
+﻿using MoistSensServer.Exceptions;
 using Npgsql;
 namespace MoistSensServer;
-
-
 
 public class PostgresCreate
 {
@@ -56,8 +52,11 @@ public class PostgresCreate
             using var dataSource = NpgsqlDataSource.Create(_connectionString);
 
             await using var command = dataSource.CreateCommand(sql);
-
-            command.Parameters.AddWithValue("@date", DateTime.Now);
+            
+            var local = DateTime.Now;
+            var utc = DateTime.SpecifyKind(local, DateTimeKind.Utc);
+            
+            command.Parameters.AddWithValue("@date", utc);
             command.Parameters.AddWithValue("@humidity",data.Humidity);
             command.Parameters.AddWithValue("@sensorname", data.SensorName ?? throw new InvalidOperationException(
                 "Missing sensorName. HumidityData sensorName variable cannot be null"));
