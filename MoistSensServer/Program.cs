@@ -1,6 +1,5 @@
 using System.Globalization;
 using MoistSensServer;
-using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 var postgresCreate = new PostgresCreate();
@@ -26,11 +25,19 @@ app.MapPost("/humidity-post", (HumidityData data) =>
     postgresCreate.InsertHumidityData(data);
 
     return
-        $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is {data.Humidity.ToString(CultureInfo.InvariantCulture)}";
+        $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is " +
+        $"{data.Humidity.ToString(CultureInfo.InvariantCulture)}";
 })
 .WithName("HumidityPost")
 .WithOpenApi();
-    
+
+app.MapPost("/sensor-description-post", (HumidityData data, string description) =>
+{
+    postgresCreate.InsertSensorDescription(data.SensorName ?? throw new InvalidOperationException("null sensor name"),
+                                            description);
+})
+.WithName("SensorDescription")
+.WithOpenApi();
 
 
 app.MapGet("/humidity-get", (string? name, int humidity) =>

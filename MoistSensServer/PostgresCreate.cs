@@ -36,7 +36,6 @@ public class PostgresCreate
         }
         catch (NpgsqlException e)
         {
-            
             Console.WriteLine(e);
             throw;
         }
@@ -44,14 +43,14 @@ public class PostgresCreate
 
     public async void InsertHumidityData(HumidityData data)
     {
-        const string sql = "INSERT INTO humidity_table (date, humidity, sensorname)" +
+        const string sqlHumidityData = "INSERT INTO humidity_table(date, humidity, sensorname)" +
                            "VALUES(@date, @humidity, @sensorname)";
 
         try
         {
             using var dataSource = NpgsqlDataSource.Create(_connectionString);
 
-            await using var command = dataSource.CreateCommand(sql);
+            await using var command = dataSource.CreateCommand(sqlHumidityData);
             
             var local = DateTime.Now;
             var utc = DateTime.SpecifyKind(local, DateTimeKind.Utc);
@@ -66,6 +65,24 @@ public class PostgresCreate
         catch (Exception e)
         {
             Console.WriteLine($"Error: {e.Message}");
+            throw;
+        }
+    }
+
+    public async void InsertSensorDescription(string name,string description)
+    {
+        const string sqlSensorName = "INSERT INTO sensor_description(sensorname, sensordescription)" +
+                                     "VALUES(@sensorname, @sensordescirption)";
+
+        try
+        {
+            using var dataSource = NpgsqlDataSource.Create(_connectionString);
+            await using var command = dataSource.CreateCommand(sqlSensorName);
+            
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
             throw;
         }
     }
