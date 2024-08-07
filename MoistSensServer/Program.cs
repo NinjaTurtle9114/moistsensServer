@@ -20,7 +20,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPost("/humidity-post", (HumidityData data) =>
+app.MapPost("/set-humidity", (HumidityData data) =>
 {
     postgresCreate.InsertHumidityData(data);
 
@@ -28,13 +28,14 @@ app.MapPost("/humidity-post", (HumidityData data) =>
         $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is " +
         $"{data.Humidity.ToString(CultureInfo.InvariantCulture)}";
 })
-.WithName("HumidityPost")
+.WithName("SetHumidity")
 .WithOpenApi();
 
-app.MapPost("/set-sensor-description", (string name, string description) =>
+app.MapPost("/set-sensor-description", (SensorDescription sensor) =>
 {
-    postgresCreate.InsertSensorDescription(name ?? throw new InvalidOperationException("null sensor name"),
-                                            description);
+    postgresCreate.InsertSensorDescription(sensor.SensorName ?? throw new InvalidOperationException("null sensor name"),
+                                            sensor.Description);
+    return $"{sensor.SensorName} description is: {sensor.Description}";
 })
 .WithName("SensorDescription")
 .WithOpenApi();

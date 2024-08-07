@@ -4,12 +4,21 @@ GET {{moistSensServer_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
-POST {{moistSensServer_HostAddress}}/humidity-post/
+POST {{moistSensServer_HostAddress}}/set-humidity/
 Content-Type: application/json
 
 {
   "sensorName": "sensor1",
   "humidity": 51
+}
+
+###
+POST {{moistSensServer_HostAddress}}/set-sensor-description/
+Content-Type: application/json
+
+{
+  "sensorName": "sensor1",
+  "description": "Carrots"
 }
 
 ###

@@ -72,20 +72,24 @@ public class PostgresCreate
         }
     }
 
-    public async void InsertSensorDescription(string name,string description)
+    public async void InsertSensorDescription(string sensorName,string sensorDescription)
     {
         const string sqlSensorName = "INSERT INTO sensor_description(sensorname, sensordescription)" +
-                                     "VALUES(@sensorname, @sensordescirption)";
+                                     "VALUES(@sensorname, @sensordescription)";
 
         try
         {
             using var dataSource = NpgsqlDataSource.Create(_connectionString);
             await using var command = dataSource.CreateCommand(sqlSensorName);
-            
+
+            command.Parameters.AddWithValue("@sensorname", sensorName);
+            command.Parameters.AddWithValue("@sensordescription", sensorDescription);
+            await command.ExecuteNonQueryAsync();
+
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Error: {e.Message}");
             throw;
         }
     }
