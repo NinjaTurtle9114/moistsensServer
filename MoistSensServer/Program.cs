@@ -31,14 +31,15 @@ app.MapPost("/humidity-post", (HumidityData data) =>
 .WithName("HumidityPost")
 .WithOpenApi();
 
-app.MapPost("/sensor-description-post", (HumidityData data, string description) =>
+app.MapPost("/set-sensor-description", (string name, string description) =>
 {
-    postgresCreate.InsertSensorDescription(data.SensorName ?? throw new InvalidOperationException("null sensor name"),
+    postgresCreate.InsertSensorDescription(name ?? throw new InvalidOperationException("null sensor name"),
                                             description);
 })
 .WithName("SensorDescription")
 .WithOpenApi();
 
+//app.MapGet("/get-sensor-descriptions", )
 
 app.MapGet("/humidity-get", (string? name, int humidity) =>
 {
@@ -47,6 +48,5 @@ app.MapGet("/humidity-get", (string? name, int humidity) =>
 })
 .WithName("HumidityGet")
 .WithOpenApi();
-
 
 app.Run();
