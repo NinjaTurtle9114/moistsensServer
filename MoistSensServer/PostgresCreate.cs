@@ -45,6 +45,7 @@ public class PostgresCreate
     {
         const string sqlHumidityData = "INSERT INTO humidity_table(date, humidity, sensorname)" +
                            "VALUES(@date, @humidity, @sensorname)";
+        
 
         try
         {
@@ -54,10 +55,12 @@ public class PostgresCreate
             
             var local = DateTime.Now;
             var utc = DateTime.SpecifyKind(local, DateTimeKind.Utc);
+
+            var timeStampedHumidityData = new TimeStampedHumidityData(data, utc);
             
-            command.Parameters.AddWithValue("@date", utc);
-            command.Parameters.AddWithValue("@humidity",data.Humidity);
-            command.Parameters.AddWithValue("@sensorname", data.SensorName ?? throw new InvalidOperationException(
+            command.Parameters.AddWithValue("@date", timeStampedHumidityData.TimeStamp);
+            command.Parameters.AddWithValue("@humidity",timeStampedHumidityData.Data.Humidity);
+            command.Parameters.AddWithValue("@sensorname", timeStampedHumidityData.Data.SensorName ?? throw new InvalidOperationException(
                 "Missing sensorName. HumidityData sensorName variable cannot be null"));
             await command.ExecuteNonQueryAsync();
             
