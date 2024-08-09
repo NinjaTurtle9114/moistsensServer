@@ -5,6 +5,7 @@ namespace MoistSensServer;
 public class PostgresCreate
 {
     private readonly string _connectionString;
+
     public PostgresCreate()
     {
         
@@ -36,8 +37,7 @@ public class PostgresCreate
         }
         catch (NpgsqlException e)
         {
-            Console.WriteLine(e);
-            throw;
+            Console.WriteLine($"Error: {e.Message}");
         }
     }
 
@@ -46,7 +46,6 @@ public class PostgresCreate
         const string sqlHumidityData = "INSERT INTO humidity_table(date, humidity, sensorname)" +
                            "VALUES(@date, @humidity, @sensorname)";
         
-
         try
         {
             using var dataSource = NpgsqlDataSource.Create(_connectionString);
@@ -68,7 +67,6 @@ public class PostgresCreate
         catch (Exception e)
         {
             Console.WriteLine($"Error: {e.Message}");
-            throw;
         }
     }
 
@@ -90,8 +88,56 @@ public class PostgresCreate
         catch (Exception e)
         {
             Console.WriteLine($"Error: {e.Message}");
-            throw;
         }
+    }
+
+    public async void QueryDescription(string description)
+    {
+        const string sql = @"SELECT
+                                sensorname,
+                                sensordescription
+                            FROM
+                                sensor_description
+                            WHERE
+                                sensordescription=@sensordescription";
+
+        try
+        {
+            await using var dataSource = NpgsqlDataSource.Create(_connectionString);
+            await using var command = dataSource.CreateCommand(sql);
+
+            command.Parameters.AddWithValue("@sensordescription", description);
+            
+            using var reader = await command.ExecuteReaderAsync();
+            
+            while (await reader.ReadAsync())
+            {
+                var sensorName = reader.GetString(0);
+                var sensorDescription = reader.GetString(1);
+                
+                Console.WriteLine($"{sensorName}\t{sensorDescription}");
+            }
+        }
+        catch (NpgsqlException e)
+        {
+            Console.WriteLine($"Error: {e.Message}");
+        }
+    }
+
+    public async void QueryHumidityData(string sensorName, DateTime startStamp = default, DateTime endStamp = default)
+    {
+        startStamp = startStamp == default ? DateTime.Now : startStamp;
+        endStamp = endStamp == default ? DateTime.Now : endStamp;
+
+        const string sql = @"SELECT
+                                date,
+                                sensorname,
+                                humidity
+                            FROM
+                                humidity_table
+                            WHERE
+                                ";
+
     }
     
 }

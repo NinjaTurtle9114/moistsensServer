@@ -1,8 +1,5 @@
 @moistSensServer_HostAddress = http://localhost:5298
 
-GET {{moistSensServer_HostAddress}}/weatherforecast/
-Accept: application/json
-
 ###
 POST {{moistSensServer_HostAddress}}/set-humidity/
 Content-Type: application/json
@@ -24,3 +21,8 @@ Content-Type: application/json
 ###
 GET {{moistSensServer_HostAddress}}/humidity-get/
 Accept: application/json
+
+###
+GET{{moistSensServer_HostAddress}}/get-sensor-descriptions?description=carrots
+Accept: application/json
+

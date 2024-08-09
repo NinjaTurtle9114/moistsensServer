@@ -40,14 +40,21 @@ app.MapPost("/set-sensor-description", (SensorDescription sensor) =>
 .WithName("SensorDescription")
 .WithOpenApi();
 
-//app.MapGet("/get-sensor-descriptions", )
+// Get all sensor names from description, should probably have another GET for giving description of a sensor (maybe)
+app.MapGet("/get-sensor-descriptions", (string description) =>
+{
+    postgresCreate.QueryDescription(description);
+})
+.WithDescription("GetSensorDescription")
+.WithOpenApi();
 
-app.MapGet("/humidity-get", (string? name, int humidity) =>
+// Get humidity of sensors between 2 timestamps, needing sensor name is weird (maybe add description)
+app.MapGet("/get-sensor-humidity", (string? name, int humidity) =>
 {
     var reading = new HumidityData(name ?? throw new ArgumentNullException(nameof(name)), humidity);
     return reading;
 })
-.WithName("HumidityGet")
+.WithName("GetSensorHumidity")
 .WithOpenApi();
 
 app.Run();
