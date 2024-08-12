@@ -6,7 +6,7 @@ Content-Type: application/json
 
 {
   "sensorName": "sensor1",
-  "humidity": 51
+  "humidity": 53
 }
 
 ###

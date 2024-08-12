@@ -93,13 +93,9 @@ public class PostgresCreate
 
     public async void QueryDescription(string description)
     {
-        const string sql = @"SELECT
-                                sensorname,
-                                sensordescription
-                            FROM
-                                sensor_description
-                            WHERE
-                                sensordescription=@sensordescription";
+        const string sql = @"SELECT sensorname, sensordescription
+                            FROM sensor_description
+                            WHERE sensordescription=@sensordescription";
 
         try
         {
@@ -124,19 +120,37 @@ public class PostgresCreate
         }
     }
 
-    public async void QueryHumidityData(string sensorName, DateTime startStamp = default, DateTime endStamp = default)
+    public async void QueryHumidityData(string sensorName, DateTime? startStamp, DateTime? endStamp)
     {
-        startStamp = startStamp == default ? DateTime.Now : startStamp;
-        endStamp = endStamp == default ? DateTime.Now : endStamp;
+        const string sql = @"SELECT date, sensorname, humidity
+                            FROM humidity_table
+                            WHERE date >= @startStamp AND date < @endStamp
+                            AND sensorname=@sensorName";
+        try
+        {
+            await using var dataSource = NpgsqlDataSource.Create(_connectionString);
+            await using var command = dataSource.CreateCommand(sql);
 
-        const string sql = @"SELECT
-                                date,
-                                sensorname,
-                                humidity
-                            FROM
-                                humidity_table
-                            WHERE
-                                ";
+            command.Parameters.AddWithValue("@sensorName", sensorName);
+            if (startStamp != null) command.Parameters.AddWithValue("@startStamp", startStamp);
+            if (endStamp != null) command.Parameters.AddWithValue("@endStamp", endStamp);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var date = reader.GetDateTime(0);
+                var name = reader.GetString(1);
+                var humidity = reader.GetInt32(2);
+                
+                Console.WriteLine($"{date} : Sensor {name} humidity is {humidity}");
+            }
+
+        }
+        catch (NpgsqlException e)
+        {
+            Console.WriteLine($"Error: {e.Message}");
+        }
 
     }
     
