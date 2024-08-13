@@ -43,11 +43,10 @@ app.MapPost("/set-sensor-description", (SensorDescription sensor) =>
 // Get all sensor names from description, should probably have another GET for giving description of a sensor (maybe)
 app.MapGet("/get-sensor-descriptions", (string description) =>
 {
-    postgresCreate.QueryDescription(description);
+    return postgresCreate.QueryDescription(description);
 })
 .WithDescription("GetSensorDescription")
 .WithOpenApi();
-
 
 app.MapGet("/get-humidity-time-period", (string sensorName, DateTime? start, DateTime? end) =>
 {
@@ -55,12 +54,12 @@ app.MapGet("/get-humidity-time-period", (string sensorName, DateTime? start, Dat
     end ??= DateTime.Now;   // Might change this to query the most recent HumidityData instead of
                             // setting start and end to Now
 
-    postgresCreate.QueryHumidityData(sensorName, start, end);
+    return postgresCreate.QueryHumidityData(sensorName, start, end);
 })
 .WithDescription("GetHumidityTimePeriod")
 .WithOpenApi();
 
-// Get humidity of sensors between 2 timestamps, needing sensor name is weird (maybe add description)
+
 app.MapGet("/get-sensor-humidity", (string? name, int humidity) =>
 {
     var reading = new HumidityData(name ?? throw new ArgumentNullException(nameof(name)), humidity);

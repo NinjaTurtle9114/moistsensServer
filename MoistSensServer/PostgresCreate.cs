@@ -91,11 +91,13 @@ public class PostgresCreate
         }
     }
 
-    public async void QueryDescription(string description)
+    public async Task<string> QueryDescription(string description)
     {
         const string sql = @"SELECT sensorname, sensordescription
                             FROM sensor_description
                             WHERE sensordescription=@sensordescription";
+
+        string? query = null;
 
         try
         {
@@ -111,21 +113,26 @@ public class PostgresCreate
                 var sensorName = reader.GetString(0);
                 var sensorDescription = reader.GetString(1);
                 
-                Console.WriteLine($"{sensorName}\t{sensorDescription}");
+                query += $"{sensorName}\t{sensorDescription}\n";
             }
         }
         catch (NpgsqlException e)
         {
             Console.WriteLine($"Error: {e.Message}");
         }
+
+        if (query == null) throw new NullQueryResponseException($"No sensor found for description: {description}");
+        return query;
     }
 
-    public async void QueryHumidityData(string sensorName, DateTime? startStamp, DateTime? endStamp)
+    public async Task<string> QueryHumidityData(string sensorName, DateTime? startStamp, DateTime? endStamp)
     {
         const string sql = @"SELECT date, sensorname, humidity
                             FROM humidity_table
                             WHERE date >= @startStamp AND date < @endStamp
                             AND sensorname=@sensorName";
+        string? query = null;
+        
         try
         {
             await using var dataSource = NpgsqlDataSource.Create(_connectionString);
@@ -143,7 +150,7 @@ public class PostgresCreate
                 var name = reader.GetString(1);
                 var humidity = reader.GetInt32(2);
                 
-                Console.WriteLine($"{date} : Sensor {name} humidity is {humidity}");
+                query +=  $"{date} : Sensor {name} humidity is {humidity}\n";
             }
 
         }
@@ -152,6 +159,11 @@ public class PostgresCreate
             Console.WriteLine($"Error: {e.Message}");
         }
 
+        if (query == null)
+            throw new NullQueryResponseException($"Query response is null. No HumidityData found for sensor" +
+                                             $"{sensorName} for specified date/dates");
+
+        return query;
     }
     
 }
