@@ -41,31 +41,25 @@ app.MapPost("/set-sensor-description", (SensorDescription sensor) =>
 .WithOpenApi();
 
 // Get all sensor names from description, should probably have another GET for giving description of a sensor (maybe)
-app.MapGet("/get-sensor-descriptions", (string description) =>
-{
-    return postgresCreate.QueryDescription(description);
-})
+app.MapGet("/get-sensor-descriptions", async (string description) =>
+    {
+        var data = await postgresCreate.QueryDescription(description);
+        return Results.Json(data);
+    })
 .WithDescription("GetSensorDescription")
 .WithOpenApi();
 
-app.MapGet("/get-humidity-time-period", (string sensorName, DateTime? start, DateTime? end) =>
+app.MapGet("/get-humidity-time-period", async (string sensorName, DateTime? start, DateTime? end) =>
 {
-    start ??= DateTime.Now; // If no date is given we assume the user wants today's HumidityData
-    end ??= DateTime.Now;   // Might change this to query the most recent HumidityData instead of
-                            // setting start and end to Now
+    start ??= DateTime.Now;                 // If no date is given we assume the user wants today's HumidityData
+    end ??= DateTime.Now.Date.AddDays(1);   // Might change this to query the most recent HumidityData instead of
+                                            // setting start and end to Now
 
-    return postgresCreate.QueryHumidityData(sensorName, start, end);
+    var data = await postgresCreate.QueryHumidityData(sensorName, start, end);
+    return Results.Json(data);
 })
 .WithDescription("GetHumidityTimePeriod")
 .WithOpenApi();
 
-
-app.MapGet("/get-sensor-humidity", (string? name, int humidity) =>
-{
-    var reading = new HumidityData(name ?? throw new ArgumentNullException(nameof(name)), humidity);
-    return reading;
-})
-.WithName("GetSensorHumidity")
-.WithOpenApi();
 
 app.Run();

@@ -59,8 +59,10 @@ public class PostgresCreate
             
             command.Parameters.AddWithValue("@date", timeStampedHumidityData.TimeStamp);
             command.Parameters.AddWithValue("@humidity",timeStampedHumidityData.Data.Humidity);
-            command.Parameters.AddWithValue("@sensorname", timeStampedHumidityData.Data.SensorName ?? throw new InvalidOperationException(
-                "Missing sensorName. HumidityData sensorName variable cannot be null"));
+            command.Parameters.AddWithValue("@sensorname", 
+                timeStampedHumidityData.Data.SensorName ?? 
+                throw new InvalidOperationException("Missing sensorName. HumidityData sensorName" +
+                                                    " variable cannot be null"));
             await command.ExecuteNonQueryAsync();
             
         }
@@ -91,13 +93,13 @@ public class PostgresCreate
         }
     }
 
-    public async Task<string> QueryDescription(string description)
+    public async Task<List<SensorDescription>> QueryDescription(string description)
     {
         const string sql = @"SELECT sensorname, sensordescription
                             FROM sensor_description
                             WHERE sensordescription=@sensordescription";
 
-        string? query = null;
+        var result = new List<SensorDescription>();
 
         try
         {
@@ -111,9 +113,11 @@ public class PostgresCreate
             while (await reader.ReadAsync())
             {
                 var sensorName = reader.GetString(0);
-                var sensorDescription = reader.GetString(1);
-                
-                query += $"{sensorName}\t{sensorDescription}\n";
+                var sensDescription = reader.GetString(1);
+
+                var sensorDescription = new SensorDescription(sensorName, sensDescription);
+
+                result.Add(sensorDescription);
             }
         }
         catch (NpgsqlException e)
@@ -121,17 +125,18 @@ public class PostgresCreate
             Console.WriteLine($"Error: {e.Message}");
         }
 
-        if (query == null) throw new NullQueryResponseException($"No sensor found for description: {description}");
-        return query;
+        if (result.Count == 0) throw new NullQueryResponseException($"No sensor found for description: {description}");
+        return result;
     }
 
-    public async Task<string> QueryHumidityData(string sensorName, DateTime? startStamp, DateTime? endStamp)
+    public async Task<List<TimeStampedHumidityData>> QueryHumidityData(string sensorName, DateTime? startStamp, DateTime? endStamp)
     {
         const string sql = @"SELECT date, sensorname, humidity
                             FROM humidity_table
                             WHERE date >= @startStamp AND date < @endStamp
                             AND sensorname=@sensorName";
-        string? query = null;
+        
+        var result = new List<TimeStampedHumidityData>();
         
         try
         {
@@ -143,14 +148,17 @@ public class PostgresCreate
             if (endStamp != null) command.Parameters.AddWithValue("@endStamp", endStamp);
 
             using var reader = await command.ExecuteReaderAsync();
-
+            
             while (await reader.ReadAsync())
             {
-                var date = reader.GetDateTime(0);
+                var timeStamp = reader.GetDateTime(0);
                 var name = reader.GetString(1);
                 var humidity = reader.GetInt32(2);
+                var humidityData = new HumidityData(name, humidity);
                 
-                query +=  $"{date} : Sensor {name} humidity is {humidity}\n";
+                var timeStampedHumidityData = new TimeStampedHumidityData(humidityData, timeStamp);
+
+                result.Add(timeStampedHumidityData);
             }
 
         }
@@ -159,11 +167,10 @@ public class PostgresCreate
             Console.WriteLine($"Error: {e.Message}");
         }
 
-        if (query == null)
+        if (result.Count == 0)
             throw new NullQueryResponseException($"Query response is null. No HumidityData found for sensor" +
                                              $"{sensorName} for specified date/dates");
-
-        return query;
+        return result;
     }
     
 }
