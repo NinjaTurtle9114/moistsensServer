@@ -1,4 +1,3 @@
-using System.Globalization;
 using MoistSensServer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,10 +22,6 @@ app.UseHttpsRedirection();
 app.MapPost("/set-humidity", (HumidityData data) =>
 {
     postgresCreate.InsertHumidityData(data);
-
-    return
-        $"{DateTime.Now}: {data.SensorName?.ToString(CultureInfo.InvariantCulture)} humidity is " +
-        $"{data.Humidity.ToString(CultureInfo.InvariantCulture)}";
 })
 .WithName("SetHumidity")
 .WithOpenApi();
@@ -35,13 +30,12 @@ app.MapPost("/set-sensor-description", (SensorDescription sensor) =>
 {
     postgresCreate.InsertSensorDescription(sensor.SensorName ?? throw new InvalidOperationException("null sensor name"),
                                             sensor.Description);
-    return $"{sensor.SensorName} description is: {sensor.Description}";
 })
 .WithName("SensorDescription")
 .WithOpenApi();
 
 // Get all sensor names from description, should probably have another GET for giving description of a sensor (maybe)
-app.MapGet("/get-sensor-descriptions", async (string description) =>
+app.MapGet("/get-sensor-description", async (string description) =>
     {
         var data = await postgresCreate.QueryDescription(description);
         return Results.Json(data);

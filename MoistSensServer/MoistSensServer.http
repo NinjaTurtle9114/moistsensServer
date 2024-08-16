@@ -19,10 +19,6 @@ Content-Type: application/json
 }
 
 ###
-GET {{moistSensServer_HostAddress}}/humidity-get/
-Accept: application/json
-
-###
 GET{{moistSensServer_HostAddress}}/get-sensor-descriptions?description=carrots
 Accept: application/json
 
