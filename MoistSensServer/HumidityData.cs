@@ -1,7 +1,7 @@
 ﻿namespace MoistSensServer;
 
-public class HumidityData(string? sensorName, int humidity)
+public class HumidityData(string? sensorName, double humidity)
 {
     public string? SensorName { get; set; } = sensorName;
-    public int Humidity { get; set; } = humidity;
+    public double Humidity { get; set; } = humidity;
 }

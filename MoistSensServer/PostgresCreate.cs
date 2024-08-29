@@ -153,7 +153,7 @@ public class PostgresCreate
             {
                 var timeStamp = reader.GetDateTime(0);
                 var name = reader.GetString(1);
-                var humidity = reader.GetInt32(2);
+                var humidity = reader.GetDouble(2);
                 var humidityData = new HumidityData(name, humidity);
                 
                 var timeStampedHumidityData = new TimeStampedHumidityData(humidityData, timeStamp);
