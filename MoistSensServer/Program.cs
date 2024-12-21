@@ -36,10 +36,10 @@ app.MapPost("/set-sensor-description", (SensorDescription sensor) =>
 
 // Get all sensor names from description, should probably have another GET for giving description of a sensor (maybe)
 app.MapGet("/get-sensor-description", async (string description) =>
-    {
-        var data = await postgresCreate.QueryDescription(description);
-        return Results.Json(data);
-    })
+{
+    var data = await postgresCreate.QueryDescription(description);
+    return Results.Json(data);
+})
 .WithDescription("GetSensorDescription")
 .WithOpenApi();
 
